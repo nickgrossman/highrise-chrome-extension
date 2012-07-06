@@ -1,0 +1,19 @@
+
+html {
+  padding: 20px 0;
+}
+
+form input.input-medium,
+form textarea.input-medium {
+  width: 100%;
+  
+}
+
+.ui-combobox a,
+.ui-combobox span {
+  display: none !important;
+}
+
+ul.ui-autocomplete {
+  width: auto !important;
+}

@@ -1,0 +1,66 @@
+<!doctype html>  
+<html lang="en">  
+<head>  
+  <meta charset="utf-8">  
+  <title>Add to Highrise</title>  
+  <link type="text/css" rel="stylesheet" media="all" href="bootstrap/css/bootstrap.min.css" /> 
+  <link type="text/css" rel="stylesheet" media="all" href="style.css" /> 
+  <link type="text/css" rel="stylesheet" media="all" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/ui-lightness/jquery-ui.css" /> 
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>	  	
+  <script type="text/javascript" src="js/jquery.xml2json.js"></script> 
+  <script type="text/javascript" src="js/json2xml.js"></script> 
+  <script type="text/javascript" src="js/xml2json.js"></script> 
+  <script type="text/javascript" src="js/jquery-ui-1.8.21.custom/js/jquery-ui-1.8.21.custom.min.js"></script>
+  <script type="text/javascript" src="js/popup.js"></script> 
+  <script type="text/javascript" src="js/config.js"></script> 
+
+  <!--[if lt IE 9]>  
+  <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>  
+  <![endif]-->  
+</head>  
+<body>  
+  <div class="container-fluid">
+<div class="demo" style="width: 300px">
+
+<div class="ui-widget">
+	<form class="form" id="add-person-form">
+		<label>First name</label>
+		<input type="text" id="first-name" name="first-name" />
+		<label>Last name</label>
+		<input type="text" id="last-name" name="last-name" />
+		<label>URL</label>
+		<input type="text" id="url" name="url" />
+		<label>Company</label>
+		<input type="text" id="company-name" name="company-name" />
+	<!--<select id="combobox" name="person">
+		<option value="">Select one...</option>
+	</select>
+-->
+	<label>Tags (comma separated)</label>
+	<input type="text" id="tags" data-provide="typeahead" name="tags"/>	
+	<br />
+	<label>Notes</label>
+	<textarea class="input" name="notes" id="notes"></textarea><br /><br />
+	<button class="btn btn-large" type="submit">Save</button>
+
+	</form>
+	
+	<div class="alert alert-success" id="status" style="display:none">
+	 
+	</div>
+</div>
+
+
+</div><!-- End demo -->
+  </div>
+  
+  <script>
+	  
+  HR.setupForm();
+  $('form').submit(HR.createPerson);
+  HR.getTags();
+
+  </script>
+  
+</body>
+</html>

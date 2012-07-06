@@ -1,0 +1,16 @@
+{
+  "name": "Add to Highrise",
+  "version": "0.1",
+  "manifest_version": 1,
+  "description": "The first extension that I made.",
+  "browser_action": {
+	"default_icon": "unicorn.png",
+	"default_popup": "popup.html"
+  },
+  "permissions": [
+  	"tabs",
+	"http://0.0.0.0:3000/*",
+	"https://connectedio.highrisehq.com/*",
+	"http://localhost/*"
+  ]
+}

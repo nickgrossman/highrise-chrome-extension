@@ -13,4 +13,6 @@ To install this:
  
 Why would you want to do this?  [Here's my reason](http://theslowhunch.net/2012/07/wanted-highrise-chrome-extension/)
 
+License: GNU Public License, [V3: http://www.opensource.org/licenses/GPL-3.0](http://www.opensource.org/licenses/GPL-3.0)
+
 (unicorn icon designed by [Andrew McKinley, from the Noun Project](http://thenounproject.com/noun/unicorn/#icon-No3364))

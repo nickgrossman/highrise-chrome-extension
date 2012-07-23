@@ -12,7 +12,7 @@
   <script type="text/javascript" src="js/xml2json.js"></script> 
   <script type="text/javascript" src="js/jquery-ui-1.8.21.custom/js/jquery-ui-1.8.21.custom.min.js"></script>
   <script type="text/javascript" src="js/popup.js"></script> 
-  <script type="text/javascript" src="js/config.js"></script> 
+  <script type="text/javascript" src="config.js"></script> 
 
   <!--[if lt IE 9]>  
   <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>  
@@ -20,29 +20,27 @@
 </head>  
 <body>  
   <div class="container-fluid">
-<div class="demo" style="width: 300px">
+<div class="demo" style="width: 220px">
 
 <div class="ui-widget">
 	<form class="form" id="add-person-form">
-		<label>First name</label>
-		<input type="text" id="first-name" name="first-name" />
-		<label>Last name</label>
-		<input type="text" id="last-name" name="last-name" />
-		<label>URL</label>
-		<input type="text" id="url" name="url" />
-		<label>Company</label>
-		<input type="text" id="company-name" name="company-name" />
-	<!--<select id="combobox" name="person">
-		<option value="">Select one...</option>
-	</select>
--->
-	<label>Tags (comma separated)</label>
-	<input type="text" id="tags" data-provide="typeahead" name="tags"/>	
+		<div id="person-card" style="display:none">
+			<i class="icon-user"></i> 
+			<span><!-- name will go here when it's chosen --></span>
+		</div>
+		<div id="loading-people" class="existing-item">Loading people...</div>
+		<input style="display:none" type="text" id="full-name" name="full-name" placeholder="Name"/>	
+		<input type="hidden" id="person-id" name="person-id" value="" />	
+		<input type="text" id="company-name" name="company-name" placeholder="Company"/>
+		<div id="existing-links" style="display:none"><!-- links will go here --></div>
+		<input type="text" id="url" name="url" placeholder="URL"/>
+	<input type="text" id="tags" data-provide="typeahead" name="tags" placeholder="Tags (comma separated)"/>	
 	<br />
-	<label>Notes</label>
-	<textarea class="input" name="notes" id="notes"></textarea><br /><br />
+	<textarea class="input" name="notes" id="notes" placeholder="Add a note"></textarea><br />
+	
+	<div id="existing-notes" style="display:none"><!-- notes will go here --></div>
+	
 	<button class="btn btn-large" type="submit">Save</button>
-
 	</form>
 	
 	<div class="alert alert-success" id="status" style="display:none">
@@ -57,7 +55,8 @@
   <script>
 	  
   HR.setupForm();
-  $('form').submit(HR.createPerson);
+  HR.loadPeople();
+  $('form').submit(HR.submitForm);
   HR.getTags();
 
   </script>

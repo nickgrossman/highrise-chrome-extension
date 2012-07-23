@@ -2,6 +2,7 @@
 /* Make a HR object */
 if (typeof(HR) == "undefined") {
   HR = {};
+  HR.users = {}
 };
 
 HR.setupForm = function() {
@@ -12,6 +13,26 @@ HR.setupForm = function() {
 
 	$('#status').hide();
 
+	// get site users
+	var req = new XMLHttpRequest();
+	req.open(
+		"GET",
+		"https://"+ HR.config.highriseID +".highrisehq.com/users.xml",
+		true,
+		HR.config.apikey,
+		HR.config.apipass
+	);
+	req.onload = function() {
+		var xml = $.parseXML(req.response);			
+		
+		$(xml).find('user').each(function() {
+			var id = $(this).find('id').text();
+			HR.users[id] = $(this).find('name').text();
+		});
+		console.log(HR.users);
+	};
+	req.send(null);
+
 };
 
 /*
@@ -20,54 +41,178 @@ HR.setupForm = function() {
 #
 */
 
-/*HR.loadPeople = function() {
+HR.loadPeople = function() {
 
 	var req = new XMLHttpRequest();
 	req.open(
 		"GET",
-		"people.xml",
-		true
+		"https://"+ HR.config.highriseID +".highrisehq.com/people.xml",
+		true,
+		HR.config.apikey,
+		HR.config.apipass
 	);
-	req.onload = parsePeople;
+	req.onload = _makePeopleArray;
 	req.send(null);
+	
+	function _makePeopleArray() {
+	
+		var xml = $.parseXML(req.response);			
 
+		var people = [];
+	
+		$(xml).find('person').each(function() {
+	
+			var person = {};
+			person.label = $(this).find('first-name').text() + ' ' + $(this).find('last-name').text();
+			person.value = $(this).find('id:first').text()
+			
+			people.push(person);
+	
+		});
+
+		$( "#full-name" )
+		.autocomplete({
+			minLength: 0,
+			source: people,
+			focus: function( event, ui ) {
+				//$( "#full-name" ).val( ui.item.label );
+				response( $.ui.autocomplete.filter(
+					people, extractLast( request.term ) ) );
+				return false;
+			},
+			select: HR.loadPerson
+		})
+		.data( "autocomplete" )._renderItem = function( ul, item ) {
+			return $( "<li></li>" )
+				.data( "item.autocomplete", item )
+				.append( "<a>" + item.label + "</a>" )
+				.appendTo( ul );
+		};
+		
+		$("#loading-people").hide();
+		$("#full-name").show();
+	}
 }
 
-HR.parsePeople =  function() {
-	var people = $.xml2json(req.response);
-	$people = $(people.person);
+HR.loadPerson = function( e, ui ) {
+	
+	var id = ui.item.value;
+	
+	e.preventDefault();
+	
+	// setup form to show a person we already have.
+	
+	$('#person-card span').text( ui.item.label );
+	$("#person-card").show();
+	$( "#full-name" ).hide();
+	$( "#person-id" ).val( id );
+	
+	// fetch details
+	
+	var personReq = new XMLHttpRequest();
+	personReq.open(
+		"GET",
+		"https://"+ HR.config.highriseID +".highrisehq.com/people/"+ id +".xml",
+		true,
+		HR.config.apikey,
+		HR.config.apipass
+	);
+	personReq.onload = function() {
+		// put tags into tag field
+		console.log(personReq.response);
+		var xml = $.parseXML(personReq.response);
+		
+		// load company
+		var company = $(xml).find('company-name').text();
+		$("#company-name").val(company);
+		
+		// load links
+		console.log($(xml).find('web-address').find('url'));
+		$(xml).find('web-address').find('url').each(function(i,v) {
+			$('#existing-links').show();
+			$('#existing-links').append('<a class="link existing-item" href="'+ $(this).text() +'">'+ $(this).text().substring(0,32) +'</a>')
+		});
+		
+		// load tags
+		var tagsString = ''
+		var numTags = $(xml).find('tag').find('name').length;
+		$(xml).find('tag').find('name').each(function(i,v) {
+			tagsString += $(this).text(); 
+			if (i != numTags - 1) {
+				tagsString += ', ';
+			}
+		})
+		$('#tags').val(tagsString);
 
-	_updateSelect($people);
-	console.log('hi')
+	}	
+	personReq.send(null);
+	
+	
+	// fetch notes	
+	var notesReq = new XMLHttpRequest();
+	notesReq.open(
+		"GET",
+		"https://"+ HR.config.highriseID +".highrisehq.com/people/"+ id +"/notes.xml",
+		true,
+		HR.config.apikey,
+		HR.config.apipass
+	);
+	notesReq.onload = function() {
+		// load notes into HTML
+		console.log(notesReq.response);
+		var xml = $.parseXML(notesReq.response);
+	
+		// turn each note into an element
+		$(xml).find('note').each(function(i,v) {
+			$('#existing-notes').show();
+			var note = $(this).find('body').text();
+			var author_id = $(this).find('author-id').text(); 
+			var author = HR.users[author_id];
+			var date = new Date($(this).find('created-at').text());
+			var prettyDate = date.getMonth() + '/' + date.getDate() + '/' + date.getFullYear();
+
+			$('#existing-notes').append('<div class="note existing-item"><div class="note-content">'+ note +' </div><span class="note-author">&mdash; '+ author +' (' + prettyDate + ')</span></div>');
+		});
+		
+	}	
+	notesReq.send(null);
+	
 }
-*/
 
-/*function updateSelect($people) {
-	$people.each(function(i,person) {
-		$('#combobox')
-			.append($('<option>')
-				.text(person.first_name + ' ' + person.last_name)
-				.attr('value', person.id));
-		//console.log(person.id + ': ' + person.first_name + ' ' + person.last_name);
-	});
-}*/
+HR.submitForm = function(e) {
+	e.preventDefault();
+	
+	if ($('#person-id').val() != '') {
+	// if ID is set, update person
+		console.log('updating person');
+		HR.updatePerson();	
+		
+	} else {
+	// if no ID is set, create person
+		console.log('creating person');
+		HR.createPerson();
+		
+	}
+	
+}
 
 HR.createPerson = function(e) {
 
-	e.preventDefault();
-
-	HR.tagArray = this['tags'].value.split(',');
-	var note = this['notes'].value.trim();
+	HR.tagArray = document.getElementById('tags').value.split(',');
+	var note = document.getElementById('notes').value.trim();
+	
+	// assemble name
+	var names = HR.assembleNames(document.getElementById('full-name').value.trim());
 
 	var person = {
 		'person': {
-			'first-name': this['first-name'].value,
-			'last-name': this['last-name'].value,
-			'company-name': this['company-name'].value,
+			'first-name': names.first,
+			'last-name': names.last,
+			'company-name': document.getElementById('company-name').value,
 			'contact-data': {
 				'web-addresses': {
 					'web-address': {
-						'url': this['url'].value,
+						'url': document.getElementById('url').value,
 						'location': 'Work'
 					}
 				}
@@ -94,7 +239,7 @@ HR.createPerson = function(e) {
 		// find ID for person just submitted
 		var xml = $.parseXML(req.response);
 		var id = $(xml).find('id:first').text();
-	
+		
 		// add tags if any
 		if (HR.tagArray) {
 			HR.addTags(id);
@@ -102,6 +247,7 @@ HR.createPerson = function(e) {
 	
 		// add note saying this was added by web
 		HR.addNote(id, 'Added from the web');
+		HR.addTag(id, 'added from web');
 	
 		// add note
 		if (note) {
@@ -120,49 +266,104 @@ HR.createPerson = function(e) {
 
 } // end addPerson
 
+HR.assembleNames = function(fullName) {
+	
+	var names = fullName.split(' ');
+	console.log(names);
+	
+	var namesObj = {
+		'first': '',
+		'last': ''
+	}
+	
+	for (var i = 0; i < names.length; i++) {
+		if (i == 0) 
+		{
+			namesObj['first'] = names[i];
+			
+		} else if ( i == names.length -1) 
+		{
+			namesObj['last'] = names[i];
+			
+		} else {
+			namesObj['first'] += " " + names[i];
+		}
+	}
+	console.log(namesObj);
+	return namesObj;
+}
 
-/*function updatePerson(id) {
+
+HR.updatePerson = function() {
+	
+	var id = document.getElementById('person-id').value;
+	console.log(id);
 
 	// PUT /people/#{id}.xml
 	// James Doe: id = 124933667
 
-	id = 124933667;
-
+	HR.tagArray = $('#tags').val().split(',');
+	var note = $('#notes').val().trim();
+	
+	// assemble name
+	
 	var data = {
 		'person': {
-			'first-name': 'frankie',
 			'contact-data': {
 				'web-addresses': {
 					'web-address': {
-						'url': 'http://foo.bar',
+						'url': document.getElementById('url').value,
 						'location': 'Work'
 					}
-				}	
+				}
 			}
 		}
 	}
 
+	console.log(data)
 	var xml = json2xml(data);	
+
 	xml = xml.replace(/<id>/g, '<id type="integer">');
+
+	if (HR.tagArray) {
+		HR.addTags(id);
+	} else {
+		console.log('no tags');
+	}
+	
+	// add note
+	if (note) {
+		HR.addNote(id, note)
+	} else {
+		console.log('no new note');
+	}
 
 	var req = new XMLHttpRequest();
 
 	req.open(
 		"PUT",
-		"https://connectedio.highrisehq.com/people/" + id + ".xml",
+		"https://"+ HR.config.highriseID +".highrisehq.com/people/" + id + ".xml",
 		true,
-		'6ea1e333703499445ab59520e7ea61ef',
-		'jaywalk'
+		HR.config.apikey,
+		HR.config.apipass
 	);
-	req.onload = callback;
+	req.onload = _afterUpdatePerson;
 	console.log(xml)
 	req.send(xml);
 
-	function callback() {
+	function _afterUpdatePerson() {
 		console.log(req);		
+		
+		// show status message
+		$('#add-person-form').hide();
+		$('#status').append('Updated!');
+		$('#status').fadeIn();
+		
+		// reset form
+		document.getElementById('add-person-form').reset();
 	}
 
-}*/
+}
 
 /*
 #
@@ -275,6 +476,7 @@ HR.addTag = function(id,tag) {
 } // HR.addTag
 
 HR.addTags = function(id) {		
+	console.log(HR.tagArray)
 	// for each tag, loop through and fire an update request
 	for (var i = 0; i < HR.tagArray.length; i++) {
 		HR.addTag(id,HR.tagArray[i]);

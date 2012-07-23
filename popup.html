@@ -21,6 +21,10 @@
 <body>  
   <div class="container-fluid">
 <div class="demo" style="width: 220px">
+	
+	<div class="alert alert-error" id="config-error" style="display:none">
+		Please configure your API settings in config.js
+	</div>
 
 <div class="ui-widget">
 	<form class="form" id="add-person-form">
@@ -53,11 +57,16 @@
   </div>
   
   <script>
-	  
+  if (typeof(HR.config) == "undefined") {
+  	  $("#add-person-form").hide();
+  	  $("#config-error").show();
+    }	  
+
   HR.setupForm();
   HR.loadPeople();
   $('form').submit(HR.submitForm);
   HR.getTags();
+
 
   </script>
   

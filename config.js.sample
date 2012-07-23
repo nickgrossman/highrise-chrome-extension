@@ -1,0 +1,6 @@
+HR.config = {
+	// properties
+	'highriseID': 'YOUR-HIGHRISE-SITE-ID',
+	'apikey': 'YOUR-API-KEY',
+	'apipass': 'YOUR-ACCT-PASSWORD'
+};

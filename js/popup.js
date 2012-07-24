@@ -90,7 +90,7 @@ HR.loadPeople = function() {
 		};
 		
 		$("#loading-people").hide();
-		$("#full-name").show();
+		$("#full-name").show().focus();
 	}
 }
 
